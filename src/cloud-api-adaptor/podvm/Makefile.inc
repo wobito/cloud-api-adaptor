@@ -24,6 +24,7 @@ ARCH        := $(or $(ARCH),$(HOST_ARCH))
 ARCH        := $(subst amd64,x86_64,$(ARCH))
 DEB_ARCH    := $(subst x86_64,amd64,$(ARCH))
 AA_KBC      ?= cc_kbc
+ATTESTER    ?= all-attesters
 KBC_URI     ?= null
 LIBC        ?= $(if $(filter $(ARCH),s390x ppc64le),gnu,musl)
 RUST_ARCH   ?= $(subst ppc64le,powerpc64le,$(ARCH))
@@ -168,7 +169,7 @@ $(GUEST_COMPONENTS_SRC):
 	$(call git_clone_repo_ref,$(GUEST_COMPONENTS_REPO),$(GUEST_COMPONENTS_SRC),$(GUEST_COMPONENTS_VERSION))
 
 $(ATTESTATION_AGENT): $(FORCE_TARGET) | $(GUEST_COMPONENTS_SRC)
-	cd "$(GUEST_COMPONENTS_SRC)/attestation-agent" && CC= ARCH=$(ARCH) $(MAKE) KBC="$(AA_KBC)" ttrpc=true LIBC="$(LIBC)"
+	cd "$(GUEST_COMPONENTS_SRC)/attestation-agent" && CC= ARCH=$(ARCH) $(MAKE) KBC="$(AA_KBC)" ATTESTER="$(ATTESTER)" ttrpc=true LIBC="$(LIBC)"
 	mkdir -p "$(@D)"
 	install --compare "$(GUEST_COMPONENTS_SRC)/target/$(RUST_TARGET)/release/attestation-agent" "$@"
 
@@ -204,7 +205,7 @@ clean_sources:
 	[ -d "$(PAUSE_SRC)" ] && cd "$(PAUSE_SRC)" && rm -rf *
 	[ -d "$(UMOCI_SRC)" ] && cd "$(UMOCI_SRC)" && git clean -xfd -e umoci
 	[ -d "$(KATA_CONTAINERS_SRC)" ] && cd "$(KATA_CONTAINERS_SRC)" && git clean -xfd
-	[ -d "$(OPA_SRC)" ] && cd "$(OPA_SRC)" && git clean -xfd 
+	[ -d "$(OPA_SRC)" ] && cd "$(OPA_SRC)" && git clean -xfd
 
 .PHONY: force always
 always force:

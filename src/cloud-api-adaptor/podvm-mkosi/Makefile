@@ -1,6 +1,7 @@
 include ../Makefile.defaults
 
 AA_KBC  ?= cc_kbc
+ATTESTER ?= all-attesters
 ARCH    ?= $(subst x86_64,amd64,$(shell uname -m))
 BUILDER = fedora-binaries-builder-$(ARCH)
 
@@ -43,6 +44,7 @@ binaries:
 	cp -rf ../../../.git ../../.git
 	docker buildx build \
 		--build-arg BUILDER_IMG=$(BUILDER) \
+		--build-arg ATTESTER=$(ATTESTER) \
 		--build-arg AA_KBC=$(AA_KBC) \
 		$(if $(DEFAULT_AGENT_POLICY_FILE),--build-arg DEFAULT_AGENT_POLICY_FILE=$(DEFAULT_AGENT_POLICY_FILE),) \
 		-o type=local,dest="./resources/binaries-tree" \
